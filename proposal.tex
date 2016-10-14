@@ -58,6 +58,15 @@
 \authorinfo{Zebediah Figura}
            {Grinnell College}
            {figuraze@grinnell.edu}
+           
+\authorinfo{Theodoros Kalfas}
+           {Grinnell College}
+           {kalfasth@grinnell.edu}
+           
+\authorinfo{Daniel Nanetti-Palacios}
+           {Grinnell College}
+           {nanettip@grinnell.edu}
+
 
 \maketitle
 
@@ -86,6 +95,13 @@ Several programs which beat arbitrary Mario-style levels have been made, includi
 As a general introduction to Neural Networks, Michael Nielsen's online textbook \textit{Neural Networks and Deep Learning} is an amazing resource that can give anyone a jump-start on all the research that has happened since the conception of neural networks. Core concepts that need to be understood are perceptrons, the equivalents to neurons, that take some weighed inputs and provide an output. If a lot of them are chained, they make a net comprised of different layers that depend on the inputs of the previous layer, thus they can make decisions depending on previous more simple decisions. Finally, the basis on which neural networks improve is changing the weights on each neuron so that the results are more accurate. It can be shown that small changes in the weights result in small changes in the output, so if during the training stages of the neural network, there is a small discrepancy between the expected result and the actual one, small changes in the weights can provide us with a better network. The actual changes can be done arbitrarily until we reach a consistent network, or they can be based on computations.\\
 \t The general approach to building a neural network which plays a platformer game intelligently doesn't differ much from classic neural networks such as character recognition. The inputs are either screenshots of the game's execution or the memory of the game, both translated so that only the important patterns such as platforms, enemies and power-ups are present, and the outputs are button presses, which are then fed into the game. The approach that SethBling takes is to randomly generate the first layer of neurons, and let each generated neural network run on an emulation of Mario. The ones that perform the best are kept and built upon, introducing new layers of neurons on them, and tested as well. That is, the neural network ends up training itself, or rather, the group of neural networks that are generated end up choosing the best one, instead of looking at other trials or being fed data that will help them train. This is a much more complex game than Snake, so implementing a similar network for Snake will be feasible during the timeline of this project.
 
+\section{Proposed Work}
+%%%% Its not a lot but I don't how to flesh this out any more since I'm still a bit unsure of the exact things we need to do to get this done.
+\t For this project we plan on producing a program that runs a game and makes the most optimal choices at each frame of gameplay. The program will use neural networks that will output the best move to make at the current state of the game in order to get closer to the goal. Within this project we will develop the neural network that will handle this task and learn by going through various different training data. This will be the biggest task of the project as we would need to create a neural network ourselves using Haskell that can learn through various trails. Other things we will need to develop is how the program will read each frame of the game and interpret that data so it can go through the neural network.
+
+\section{Timeline}
+%%%% Timeline feels a bit straightforward since there are only 3 checkpoints. If you guys know how to make this longer go ahead.
+\t By the time we reach the first checkpoint, we hope to have at least completed a very basic structure for our neural network that we will use for the rest of the project. We also plan on figuring out how to get the data from the emulator that the game is running on and use it as the input for the program. For the second checkpoint, our neural network will hopefully be able to reach the goal in most if not all the tests given, but not exactly optimally. When the third checkpoint comes around, we would either have turned the neural network into recurrent neural network or have optimized and adjusted the previous neural network so the player would reach the goal in the most optimal way possible.
 
 \appendix
 \section{Appendix Title}
