@@ -69,11 +69,15 @@
 \category{CR-number}{subcategory}{third-level}
 
 \keywords
-keyword1, keyword2
+Neural Networks, Machine Learning, Haskell
 
 \section{Introduction}
 
 The concept of neural networks, while dating back to the 1940s, has gained popularity and interest in recent years, partly due to breakthroughs in fast GPU-based implementation and the invention of recurrent neural nets. In our paper we implement a neural net in Haskell, a strongly-typed functional language, with the intent of demonstrating how a neural network can solve NP-hard problems. In order to best demonstrate the process and successfulness of a neural network, we present as the problem to be solved the well-known video game \textit{Snake}. Solving a problem such as this allows us to observe elements of the network's heuristic, as well as show the speed and manner in which it learns to solve the problem.
+
+A neural network functions by accepting a set of inputs, then feeding those inputs through a series of neurons. Each neuron receives some number of numerical inputs, either directly taken from the inputs to the network or from the output of some other neurons, and multiplies those inputs by an arbitrary set of weights, outputting the sum (i.e. the dot product) to another neuron. The outputs of the last set of neurons may then be interpreted. In the case of \textit{Snake} the set of inputs is simply the set of all cells, with (say) -1 representing the presence of a barrier, 0 an empty cell, and 1 representing a fruit. The program would then give four outputs, representing (approximately) the probabilities with which the player should turn left, right, up, and down, respectively.
+
+The key function here which allows the program to actually solve the problem itself, rather than having all weights be programmed manually, is the concept of \textit{machine learning}. In order to find the most optimal configuration of weights which will allow the network to most effectively solve the problem, one might arbitrarily modify weights and test whether the network's output is more or less accurate. However, since there may be as many as billions of weights in the network, systematically finding the best combination is infeasible in this manner. A better solution involves using calculus to determine the partial derivative of the output's accuracy (judged by some \textit{cost function}) with respect to each neuron, and then changing all neurons according to the sign and magnitude of this derivative. The most efficient way of doing this, popularized in 1986 by Rumelhart et al., is the \textit{back-propagation} algorithm, makes use of the chain rule to calculate all modifications using only two ``passes'' through the network.
 
 \appendix
 \section{Appendix Title}
