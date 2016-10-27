@@ -2,12 +2,26 @@ type Neuron = ([Double],Double) -- [weights], balance
 type Layer = [Neuron]
 type Net = [Layer]
 
--- define the specific nets that the site has, so we can test
+-- test nets
 
 nand :: Neuron
 nand = ([-2,-2],3)
 
 testnand = ((perceive $ zvar [0,0] nand) == 1) && ((perceive $ zvar [1,1] nand) == 0)
+
+-- https://mattmazur.com/2015/03/17/a-step-by-step-backpropagation-example/
+
+mazur :: Net
+mazur = [[([0.15,0.20],0.35),([0.25,0.30],0.35)],
+         [([0.40,0.45],0.60),([0.50,0.55],0.60)]]
+
+-- tested—this gives at least as many digits of accuracy as the example on the site
+testmazur = compute [0.05,0.10] mazur
+
+-- I'm about 90% sure the values here are correct.
+testmazurbp = backprop [0.05,0.10] mazur [0.01,0.99]
+
+----------------
 
 -- vector multiply, which we use a couple times.
 vecmul :: [Double] -> [Double] -> Double
@@ -40,25 +54,35 @@ compute inputs (layer:layers) = compute outputs layers
 
 
 -- now for the backpropogation algorithm.
--- every layer needs to know both its own z values, and the errors (δ) of the layer above it.
+-- every layer needs to know both its own z values, and the weights (w) and errors (δ) of the layer above it.
+-- we can get weights easily; that's part of the net and we have access to everything below us.
 -- we want to return a matrix of errors (errors are associated with neurons), which the <whatever calls this> can use to calculate the change in weight. (the change in weight is - (η * δ * a), and η is const and we already know a, so δ is all we need.)
 
--- meanwhile, δ = [w`*δ`]*σ'(z).
 
 --           inputs             goals       errors
 backprop :: [Double] -> Net -> [Double] -> [[Double]]
-backprop inputs (layer:layers)  goals = (map (\neuron -> (vecmul (fst neuron) (head errors)) * (sigma' $ zvar inputs neuron)) layer) : errors
+
+-- the final case, where δ = cost' * σ'(z).
+backprop inputs [layer] goals        = (zipWith (*) costs (map sigma' outputs)) : []
+  where costs   = zipWith (cost_quad') outputs goals
+        outputs = map (sigma . (zvar inputs)) layer
+
+-- in all other cases, δ = [w`*δ`]*σ'(z).
+backprop inputs (layer:layers) goals = (zipWith (*) (matmul (map fst $ head layers) (head errors)) (map sigma' outputs)) : errors
   where errors  = backprop outputs layers goals
         outputs = map (sigma . (zvar inputs)) layer
 
--- and the final case. here we have to compute the cost, then we multiply it by σ'(z).
-backprop inputs [] goals = [zipWith (*) nablacost (map sigma' inputs)]
-  where nablacost = zipWith (cost_quad') inputs goals
+-- this isn't a generic matrix multiplication—rather, it's an implementation of the w`*δ` thing.
+-- amusingly we could curry this, but you know what? fsck currying, it's a stupid way to obscure things.
+-- we have to zipWith (map) to multiply the error of each neuron by each of its weights.
+-- "then" we fold addition.
+matmul :: [[Double]] -> [Double] -> [Double]
+matmul weights errors = foldl (zipWith (+)) (repeat 0) $ zipWith (\w e -> map (*e) w) weights errors
 
 -- I'm not sure if we need this (yet?)
 cost_quad :: [Double] -> [Double] -> Double
 cost_quad inputs goals = 0.5 * (sum (zipWith (\x y -> (x-y)^2) inputs goals))
 
 -- partial derivative, with respect to the first argument (inputs)
-cost_quad' :: Double-> Double -> Double
+cost_quad' :: Double -> Double -> Double
 cost_quad' input goal = input - goal
