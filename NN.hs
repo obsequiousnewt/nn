@@ -21,6 +21,8 @@ testmazur = compute [0.05,0.10] mazur
 -- I'm about 90% sure the values here are correct.
 testmazurbp = backprop [0.05,0.10] mazur [0.01,0.99]
 
+testmazurgd = descend [0.05,0.10] mazur [0.01,0.99]
+
 ----------------
 
 -- vector multiply, which we use a couple times.
@@ -86,3 +88,33 @@ cost_quad inputs goals = 0.5 * (sum (zipWith (\x y -> (x-y)^2) inputs goals))
 -- partial derivative, with respect to the first argument (inputs)
 cost_quad' :: Double -> Double -> Double
 cost_quad' input goal = input - goal
+
+
+-- last step (well, last complicated step, at least for now) is gradient descent.
+-- the change in weight of each neuron is, as we have said, -(η*δ*a), where a is the output [=σ(z)] of whatever neuron this is receiving from.
+-- the change in bias is -(η*δ).
+
+eta :: Double
+eta = 0.5
+
+--                outputs (a)           error (δ)
+descend_neuron :: [Double] -> Neuron -> Double -> Neuron
+descend_neuron outputs (weights,bias) error = (zipWith (-) weights dweights,bias-dbias)
+  where dweights = map (eta*error*) outputs
+        dbias    = eta*error
+
+--the arguments are backwards because I originally wrote this with inputs -> net -> goals, but then realized that this ordering would make it really easy to repeat
+descend :: [Double] -> Net -> [Double] -> Net
+descend inputs net goals = descend' inputs net errors
+  where errors = backprop inputs net goals
+
+descend' :: [Double] -> Net -> [[Double]] -> Net
+descend' _ [] _ = []
+descend' inputs (layer:layers) (errors:errorss) = (zipWith (descend_neuron inputs) layer errors):(descend' outputs layers errorss)
+  where outputs = map (sigma . (zvar inputs)) layer
+
+-- and here is a demonstration of our power
+dem0 :: [Double] -> Net -> [Double] -> [[Double]]
+dem0 inputs net outputs = map (compute inputs) $ iterate (flip (descend inputs) outputs) net
+
+demo n = (demo [0.05,0.1] mazur [0.1,0.99]) !! n
