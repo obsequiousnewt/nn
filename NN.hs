@@ -117,4 +117,5 @@ descend' inputs (layer:layers) (errors:errorss) = (zipWith (descend_neuron input
 dem0 :: [Double] -> Net -> [Double] -> [[Double]]
 dem0 inputs net outputs = map (compute inputs) $ iterate (flip (descend inputs) outputs) net
 
-demo n = (demo [0.05,0.1] mazur [0.1,0.99]) !! n
+demo :: Int -> [Double]
+demo n = (dem0 [0.05,0.1] mazur [0.1,0.99]) !! n
