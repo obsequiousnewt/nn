@@ -1,5 +1,3 @@
-{-# LANGUAGE ViewPatterns #-}
-
 import qualified Data.Sequence as S
 import Data.Sequence (Seq, fromList, index, elemIndexR, (<|))
 import Data.Foldable
@@ -56,9 +54,6 @@ toGameboard = undefined
 snakeHead :: Seq Loc -> Loc
 snakeHead snake = index snake 0
 
-removeFood :: Loc -> [Loc] -> [Loc]
-removeFood food foods = filter (/=food) foods
-
 hitSelf :: Loc -> Seq Loc -> Bool
 hitSelf newHead snake = case (elemIndexR newHead snake) of
     Just _  -> True
@@ -89,5 +84,5 @@ generateFrame InputRight (foods,snake)
 generateFrame' :: Loc -> Position -> Maybe Position
 generateFrame' newHead (foods,snake)
     | hitSelf newHead snake = Nothing
-    | elem newHead foods    = Just (removeFood newHead foods, newHead <| snake)
+    | elem newHead foods    = Just (filter (/=newHead) foods, newHead <| snake)
     | otherwise             = Just (foods, newHead <| (S.take ((S.length snake) - 1) snake))
