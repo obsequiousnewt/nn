@@ -1,3 +1,5 @@
+import System.Environment
+
 type Neuron = ([Double],Double) -- [weights], balance
 type Layer = [Neuron]
 type Net = [Layer]
@@ -119,3 +121,8 @@ dem0 inputs net outputs = map (compute inputs) $ iterate (flip (descend inputs) 
 
 demo :: Int -> [Double]
 demo n = (dem0 [0.05,0.1] mazur [0.1,0.99]) !! n
+
+main = do
+    args <- getArgs
+    let n = read (head args)::Int
+    print $ demo n

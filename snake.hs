@@ -1,15 +1,14 @@
 import qualified Data.Sequence as S
 import Data.Sequence (Seq, fromList, index, elemIndexR, (<|))
 import Data.Foldable
+import qualified Data.Vector as V
+import Data.Vector (Vector, (//))
 
 -- Setup for game uses PM's code for Tic-Tac-Toe from HW 3
 -- https://github.com/grinnell-cs/395-homework-03
 
 -- Movement options for the player
 data Movement = InputUp | InputDown | InputLeft | InputRight deriving (Eq, Show)
-
--- Marks that determine what is on each space in the game
-data Mark = Empty | Body | Food deriving (Eq, Show)
 
 --           x    y
 type Loc = (Int, Int)
@@ -47,8 +46,8 @@ newGame = ([(7,7)],fromList [(4,3)])
 
 -- generates a gameboard in the format of a 2D array that can be easily read by the neural net
 
-toGameboard :: Position -> [[Mark]]
-toGameboard = undefined
+toGameboard :: Position -> Vector Double
+toGameboard (foods,snake) = (V.replicate (boardRows * boardCols) 0) // (map (\(x,y) -> ((boardRows * y) + x,1.0)) foods) // (map (\(x,y) -> ((boardRows * y) + x,-1.0)) $ toList snake)
 
 -- Functions to help search within the snake
 snakeHead :: Seq Loc -> Loc
