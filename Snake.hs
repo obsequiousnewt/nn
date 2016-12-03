@@ -24,23 +24,23 @@ boardCols = 8
 -- we'll keep every new game the same to make things less confusing.
 -- It will look like this:
 --  -----------------
--- 8| | | | | | | | |
+-- 7| | | | | | | | |
 --  -----------------
--- 7| | | | | | |F| |
---  -----------------
--- 6| | | | | | | | |
+-- 6| | | | | | |F| |
 --  -----------------
 -- 5| | | | | | | | |
 --  -----------------
 -- 4| | | | | | | | |
 --  -----------------
--- 3| | | |B| | | | |
+-- 3| | | | | | | | |
 --  -----------------
--- 2| | | | | | | | |
+-- 2| | | |B| | | | |
 --  -----------------
 -- 1| | | | | | | | |
 --  -----------------
---   1 2 3 4 5 6 7 8
+-- 0| | | | | | | | |
+--  -----------------
+--   0 1 2 3 4 5 6 7
 -- with B being the Body and F being food.
 
 newGame :: Position
@@ -68,19 +68,19 @@ hitSelf newHead snake = case (elemIndexR newHead snake) of
 
 generateFrame :: Movement -> Position -> Maybe (Bool,Position)
 generateFrame InputUp (foods,snake)
-    | y == boardRows = Nothing
+    | y == boardRows-1 = Nothing
     | otherwise      = generateFrame' (x,y+1) (foods,snake)
     where (x,y)   = snakeHead snake
 generateFrame InputDown (foods,snake)
-    | y == 1         = Nothing
+    | y == 0         = Nothing
     | otherwise      = generateFrame' (x,y-1) (foods,snake)
     where (x,y)   = snakeHead snake
 generateFrame InputLeft (foods,snake)
-    | x == 1         = Nothing
+    | x == 0         = Nothing
     | otherwise      = generateFrame' (x-1,y) (foods,snake)
     where (x,y)   = snakeHead snake
 generateFrame InputRight (foods,snake)
-    | x == boardCols = Nothing
+    | x == boardCols-1 = Nothing
     | otherwise      = generateFrame' (x+1,y) (foods,snake)
     where (x,y)   = snakeHead snake
 

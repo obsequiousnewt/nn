@@ -5,7 +5,6 @@ import System.Random
 import Data.Vector (toList)
 import Data.List (sort)
 import Control.Monad (replicateM)
-import Control.Monad.Loops (iterateM_)
 
 import NN
 import Snake
@@ -13,13 +12,13 @@ import Snake
 -- first, some constants.
 population_size = 10
 mutation_rate = 0.05
-net_depth = 2
-net_width = 10
+net_widths = [(boardRows*boardCols),10,4]
 
 score :: Net -> Int
 score n = score' newGame 0 n
 
 score' :: Position -> Int -> Net -> Int
+score' _ 100 _ = 0 -- we ran into an infinite loop
 score' board i n =
   let output    = compute (toList $ toGameboard board) n
       direction = case (snd $ head $ reverse $ sort $ zip output [0..]) of
@@ -46,16 +45,16 @@ kalfas a b = do
 crossover :: Net -> Net -> IO Net
 crossover a b = do
   q <- crossover' (flatten a) (flatten b)
-  return (expand q (length a) (length $ head a))
+  return (expand q net_widths)
 
 roulette :: [(Int,a)] -> Int -> a
-roulette [] _ = error "value passed to roulette is too high"
+roulette [] v = error ("value passed to roulette is too high" ++ show v)
 roulette ((k,x):xs) v = if (v < k) then x else roulette xs (v-k)
 
 -- currently this potentially allows asexual reproduction, which isn't great but we'll leave it for now
 mate :: [Int] -> [Net] -> IO (Net,Net)
 mate fitnesses nets = do
-  k <- randomRIO (0, sum fitnesses)
+  k <- randomRIO (0, sum fitnesses-1)
   let q = zip fitnesses nets
   let a = roulette q k
   let b = roulette q k
@@ -63,12 +62,10 @@ mate fitnesses nets = do
 
 mutate :: Net -> IO Net
 mutate n = do
-  let depth = length n
-  let width = length $ head n
   let flat = flatten n
   k <- randomRIO (0,length n)
   v <- randomRIO (-1.0,1.0)
-  return $ expand ((take k flat) ++ (v:(drop (k+1) flat))) depth width
+  return $ expand ((take k flat) ++ (v:(drop (k+1) flat))) net_widths
 
 generation :: [Net] -> IO [Net]
 generation nets = do
@@ -84,8 +81,13 @@ reproduce fitnesses nets = do
   mutant <- (if k < mutation_rate then mutate zygote else return zygote)
   return mutant
 
+-- why doesn't this exist?
+iterateM :: (Monad m) => (a -> m a) -> a -> [m a]
+iterateM f x = iterate (f =<<) (return x)
+
 evolve :: Int -> IO Net
 evolve time = do
-  k <- sequence $ replicate population_size $ makenetr net_depth net_width
-  res <- (iterateM_ generation k)
-  return $ res !! time
+  k <- sequence $ replicate population_size $ makenetr net_widths
+  let res = (iterateM generation k)
+  out <- res !! time
+  return $ head out
