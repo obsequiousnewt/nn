@@ -1,8 +1,49 @@
+module NN where
+
 import System.Environment
+import System.Random
+import Control.Monad (replicateM)
 
 type Neuron = ([Double],Double) -- [weights], balance
 type Layer = [Neuron]
 type Net = [Layer]
+
+-- Net :: [[([Double],Double)]]
+
+-- functions to convert nets to and from flat lists of values that GA can use
+
+net_length :: Net -> Int
+net_length n = sum $ map (sum . (map neuron_length)) n
+
+neuron_length :: Neuron -> Int
+neuron_length (w,_) = length w + 1
+
+flatten :: Net -> [Double]
+flatten n = concat $ map (concat . (map flatten_neuron)) n
+
+flatten_neuron :: Neuron -> [Double]
+flatten_neuron (w,b) = b:w
+
+expand :: [Double] -> Int -> Int -> Net
+expand [] _ _ = []
+expand list depth width = expand_layer (take realwidth list) width : expand (drop realwidth list) depth width
+  where realwidth = width*(width+1)
+
+expand_layer :: [Double] -> Int -> Layer
+expand_layer [] _ = []
+expand_layer list width = (\(b:w) -> (w,b)) (take (width+1) list) : expand_layer (drop (width+1) list) width
+
+-- non-test net
+
+makenet :: Int -> Int -> Net
+makenet depth width = replicate depth $ replicate width (replicate width 0,0)
+
+makenetr :: Int -> Int -> IO Net
+makenetr depth width = do
+  n <- sequence (replicate (depth*width*(width+1)) $ randomRIO (-1.0,1.0))
+  return $ expand n depth width
+
+--makenetr depth width g = expand (take (depth*width*(width+1)) $ unfoldr (Just . randomR (-1.0,1.0)) g) depth width
 
 -- test nets
 

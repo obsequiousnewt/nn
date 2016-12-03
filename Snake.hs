@@ -1,3 +1,5 @@
+module Snake where
+
 import qualified Data.Sequence as S
 import Data.Sequence (Seq, fromList, index, elemIndexR, (<|))
 import Data.Foldable
@@ -44,7 +46,7 @@ boardCols = 8
 newGame :: Position
 newGame = ([(7,7)],fromList [(4,3)])
 
--- generates a gameboard in the format of a 2D array that can be easily read by the neural net
+-- generates a gameboard in the format of a 1D array that can be easily read by the neural net
 
 toGameboard :: Position -> Vector Double
 toGameboard (foods,snake) = (V.replicate (boardRows * boardCols) 0) // (map (\(x,y) -> ((boardRows * y) + x,1.0)) foods) // (map (\(x,y) -> ((boardRows * y) + x,-1.0)) $ toList snake)
@@ -62,7 +64,9 @@ hitSelf newHead snake = case (elemIndexR newHead snake) of
 -- is valid, it will return Position, otherwise returns nothing since
 -- the move loses the game.
 
-generateFrame :: Movement -> Position -> Maybe Position
+-- returns also a bool signaling whether we have just eaten a fruit, so scoring is easier
+
+generateFrame :: Movement -> Position -> Maybe (Bool,Position)
 generateFrame InputUp (foods,snake)
     | y == boardRows = Nothing
     | otherwise      = generateFrame' (x,y+1) (foods,snake)
@@ -80,8 +84,8 @@ generateFrame InputRight (foods,snake)
     | otherwise      = generateFrame' (x+1,y) (foods,snake)
     where (x,y)   = snakeHead snake
 
-generateFrame' :: Loc -> Position -> Maybe Position
+generateFrame' :: Loc -> Position -> Maybe (Bool,Position)
 generateFrame' newHead (foods,snake)
     | hitSelf newHead snake = Nothing
-    | elem newHead foods    = Just (filter (/=newHead) foods, newHead <| snake)
-    | otherwise             = Just (foods, newHead <| (S.take ((S.length snake) - 1) snake))
+    | elem newHead foods    = Just (True,(filter (/=newHead) foods, newHead <| snake))
+    | otherwise             = Just (False,(foods, newHead <| (S.take ((S.length snake) - 1) snake)))
