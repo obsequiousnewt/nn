@@ -1,4 +1,5 @@
 module Genetic where
+
 -- Genetic algorithms.
 import System.Environment
 import System.Random
@@ -91,3 +92,9 @@ evolve time = do
   let res = (iterateM generation k)
   out <- res !! time
   return $ head out
+
+main = do
+  args <- getArgs
+  let n = read (head args)::Int -- number of trials
+  res <- evolve n
+  print $ score res

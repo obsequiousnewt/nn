@@ -2,7 +2,9 @@ module Genetic where
 -- Genetic algorithms.
 import System.Environment
 import System.Random
-import Data.Vector (toList)
+import Data.Sequence (index)
+import Data.Vector (toList, (//), Vector)
+import qualified Data.Vector as V
 import Data.List (sort)
 import Control.Monad (replicateM)
 
@@ -12,15 +14,24 @@ import Snake
 -- first, some constants.
 population_size = 10
 mutation_rate = 0.05
-net_widths = [(boardRows*boardCols),10,4]
+net_widths = [9,10,4]
 
 score :: Net -> Int
 score n = score' newGame 0 n
 
+getSurroundings :: Position -> Vector Double
+getSurroundings (foods,snake) =
+  let (sx,sy) = index snake 0
+   in (V.replicate 9 0) // ((gsmap sx sy) $ (gsfilter sx sy) foods) // ((gsmap sx sy) $ (gsfilter sx sy) $ S.toList snake)
+
+gsmap sx sy = (map (\(x,y) -> (((y-sy)*3)+(x-sx),-1)))
+
+gsfilter sx sy = (filter (\(x,y) -> (x >= sx && x <= (sx+3) && y >= sy && y < (sy+3))))
+
 score' :: Position -> Int -> Net -> Int
 score' _ 100 _ = 0 -- we ran into an infinite loop
 score' board i n =
-  let output    = compute (toList $ toGameboard board) n
+  let output    = compute (V.toList $ toGameboard board) n
       direction = case (snd $ head $ reverse $ sort $ zip output [0..]) of
           0 -> InputUp
           1 -> InputDown
